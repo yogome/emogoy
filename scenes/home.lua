@@ -20,6 +20,7 @@ local topPipeTransition
 local bottomPipeTransition
 local birdArray
 local logo, gameOver
+local score, scoreText
 ------------------------- Constants
 local topPipeOffsetY = -100
 local bottomPipeOffsetY = 100
@@ -156,9 +157,13 @@ local function checkTubeCollision( tube, object, element1, element2)
 				bloodSplash.x = object.x
 				bloodSplash.y = object.y
 				objectGroup:insert(bloodSplash)
+				score = score + object.value
+				scoreText.text = score
 			end
 		else
-			
+			if object.name == "bird" then
+				object.value = object.value + 1
+			end
 		end
 	end
 end
@@ -192,6 +197,11 @@ function scene:createScene( event )
 	hudGroup = display.newGroup()
     group:insert(hudGroup)
 	
+	scoreText = display.newText("0",0,0,"pixel",60)
+	scoreText.x = display.contentCenterX - 40
+	scoreText.y = display.screenOriginY + 70
+	hudGroup:insert(scoreText)
+	
 	logo = display.newImage("images/logo.png", true)
 	logo.x = display.contentCenterX
 	logo.y = display.screenOriginY + 200
@@ -221,6 +231,7 @@ function scene:willEnterScene(event)
 	birdArray = {}
 	unlockTaps = 0
 	currentFrame = 0
+	score = 0
 	
 	display.remove(background)
 	background = nil
