@@ -15,7 +15,7 @@ local backgroundGroup, background
 local hudGroup, scoreNumber
 local objectGroup
 local currentFrame
-local topPipe, bottomPipe
+local topPipe, bottomPipe, topPipeGroup, bottomPipeGroup
 local topPipeTransition
 local bottomPipeTransition
 ------------------------- Constants
@@ -52,15 +52,15 @@ end
 local function sceneTouch(event)
 	if not topPipeTransition and not bottomPipeTransition then
 		sounds.pipeStart()
-		topPipeTransition = protector.to(topPipe,{time = 210, y = display.contentCenterY, transition = easing.inExpo, onComplete = function()
+		topPipeTransition = protector.to(topPipeGroup,{time = 210, y = display.contentCenterY, transition = easing.inExpo, onComplete = function()
 			sounds.pipeEnd()
-			topPipeTransition = protector.to(topPipe,{delay = 50, time = 300, y = display.contentCenterY + topPipeOffsetY, transition = easing.inQuad, onComplete = function()
+			topPipeTransition = protector.to(topPipeGroup,{delay = 50, time = 300, y = display.contentCenterY + topPipeOffsetY, transition = easing.inQuad, onComplete = function()
 				topPipeTransition = nil
 			end})
 		end})
 
-		bottomPipeTransition = protector.to(bottomPipe,{time = 210, y = display.contentCenterY, transition = easing.inExpo, onComplete = function()
-			bottomPipeTransition = protector.to(bottomPipe,{delay = 50, time = 300, y = display.contentCenterY + bottomPipeOffsetY, transition = easing.inQuad, onComplete = function()
+		bottomPipeTransition = protector.to(bottomPipeGroup,{time = 210, y = display.contentCenterY, transition = easing.inExpo, onComplete = function()
+			bottomPipeTransition = protector.to(bottomPipeGroup,{delay = 50, time = 300, y = display.contentCenterY + bottomPipeOffsetY, transition = easing.inQuad, onComplete = function()
 				bottomPipeTransition = nil
 			end})
 		end})
@@ -106,6 +106,7 @@ local function newBird()
 	bird.anchorChildren = true
 	
 	physics.addBody( bird, { density = 1.0, friction = 0.3, bounce = 0.2, radius = 25 } )
+	bird.isBullet = true
 	
 	return bird
 end
@@ -143,7 +144,7 @@ end
 
 function scene:willEnterScene(event)
 	physics.start()
-	physics.setGravity( 0, 6 )
+	physics.setGravity( 6, 0 )
 	physics.setDrawMode( "hybrid" )
 	
 	unlockTaps = 0
@@ -154,29 +155,31 @@ function scene:willEnterScene(event)
 	background = gyroBG.new("images/backgrounds/bg_"..math.random(1,2),1024)
 	backgroundGroup:insert(background)
 	
+	topPipeGroup = display.newGroup()
+	topPipeGroup.anchorChildren = true
+	topPipeGroup.anchorY = 0
+	topPipeGroup.x = display.contentCenterX
+	topPipeGroup.y = display.contentCenterY + topPipeOffsetY
+	topPipeGroup.rotation = 180
 	topPipe = display.newImage("images/elements/pipe.png",true)
-	topPipe.anchorY = 0
-	topPipe.rotation = 180
-	topPipe.xScale = 0.6
-	topPipe.yScale = 0.6
-	topPipe.x = display.contentCenterX
-	topPipe.y = display.contentCenterY + topPipeOffsetY
-	objectGroup:insert(topPipe)
+	topPipeGroup:insert(topPipe)
+	physics.addBody( topPipeGroup, "kinematic", 
+		{ radius = 50, isSensor = true, shape = { -48,-520, 48,-520, 48,400, -48,400 }}, -- Receptor
+		{ bounce = 1, friction = 0.4, density = 1, shape = { -64,-512, 64,-512, 64,512, -64,512 }})
+	
+	bottomPipeGroup = display.newGroup()
+	bottomPipeGroup.anchorChildren = true
+	bottomPipeGroup.anchorY = 0
+	bottomPipeGroup.rotation = 0
+	bottomPipeGroup.x = display.contentCenterX
+	bottomPipeGroup.y = display.contentCenterY + bottomPipeOffsetY
 	
 	bottomPipe = display.newImage("images/elements/pipe.png",true)
-	bottomPipe.anchorY = 0
-	bottomPipe.rotation = 0
-	bottomPipe.xScale = 0.6
-	bottomPipe.yScale = 0.6
-	bottomPipe.x = display.contentCenterX
-	bottomPipe.y = display.contentCenterY + bottomPipeOffsetY
-	objectGroup:insert(bottomPipe)
-	
-	local bird = newBird()
-	bird.x = display.screenOriginX + 100
-	bird.y = display.contentCenterY
-	objectGroup:insert(bird)
-	
+	bottomPipeGroup:insert(bottomPipe)
+	physics.addBody( bottomPipeGroup, "kinematic", 
+		{ radius = 50, isSensor = true, shape = { -48,-520, 48,-520, 48,400, -48,400 }}, -- Receptor
+		{ bounce = 1, friction = 0.4, density = 1, shape = { -64,-512, 64,-512, 64,512, -64,512 }})
+		
 	local gameFloor = display.newImage("images/elements/floor.png")
 	gameFloor.anchorY = 1
 	gameFloor.x = display.contentCenterX
@@ -189,6 +192,13 @@ end
 function scene:enterFrame(event)
 	currentFrame = currentFrame + 1
 	
+	if currentFrame % 100 == 0 then
+		currentFrame = 0
+		local bird = newBird()
+		bird.x = display.screenOriginX - 100
+		bird.y = display.contentCenterY + math.random(-200,200)
+		objectGroup:insert(bird)
+	end
 end
 
 function scene:enterScene( event )
