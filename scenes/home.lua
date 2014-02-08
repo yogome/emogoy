@@ -6,6 +6,7 @@ local music = require ( "music" )
 local protector = require( "helpers.protector" )
 local gyroBG = require( "helpers.gyroBackground" )
 local ui = require( "helpers.ui" )
+local physics = require( "physics" )
 local scene = storyboard.newScene()
 ------------------------- Variables
 local buttonsEnabled 
@@ -20,6 +21,22 @@ local bottomPipeTransition
 ------------------------- Constants
 local topPipeOffsetY = -100
 local bottomPipeOffsetY = 100
+
+local colorData = {
+	{r = 243/255, g = 214/255, b = 208/255},
+	{r = 168/255, g = 213/255, b = 255/255},
+	{r = 68/255, g = 63/255, b = 143/255},
+	{r = 255/255, g = 51/255, b = 133/255},
+	{r = 255/255, g = 0/255, b = 0/255},
+	{r = 0/255, g = 255/255, b = 0/255},
+	{r = 255/255, g = 255/255, b = 0/255},
+	{r = 255/255, g = 128/255, b = 0/255},
+	{r = 0/255, g = 255/255, b = 255/255},
+	{r = 0/255, g = 128/255, b = 255/255},
+	{r = 0/255, g = 255/255, b = 128/255},
+	{r = 128/255, g = 128/255, b = 128/255},
+}
+
 ------------------------- Functions
 local function openTestMenu()
 	if buttonsEnabled == true then
@@ -35,14 +52,14 @@ end
 local function sceneTouch(event)
 	if not topPipeTransition and not bottomPipeTransition then
 		sounds.pipeStart()
-		topPipeTransition = protector.to(topPipe,{time = 250, y = display.contentCenterY, transition = easing.inExpo, onComplete = function()
+		topPipeTransition = protector.to(topPipe,{time = 210, y = display.contentCenterY, transition = easing.inExpo, onComplete = function()
 			sounds.pipeEnd()
 			topPipeTransition = protector.to(topPipe,{delay = 50, time = 300, y = display.contentCenterY + topPipeOffsetY, transition = easing.inQuad, onComplete = function()
 				topPipeTransition = nil
 			end})
 		end})
 
-		bottomPipeTransition = protector.to(bottomPipe,{time = 250, y = display.contentCenterY, transition = easing.inExpo, onComplete = function()
+		bottomPipeTransition = protector.to(bottomPipe,{time = 210, y = display.contentCenterY, transition = easing.inExpo, onComplete = function()
 			bottomPipeTransition = protector.to(bottomPipe,{delay = 50, time = 300, y = display.contentCenterY + bottomPipeOffsetY, transition = easing.inQuad, onComplete = function()
 				bottomPipeTransition = nil
 			end})
@@ -51,6 +68,48 @@ local function sceneTouch(event)
 end
 
 ------------------------- class functions 
+local function newBird()
+	local bird = display.newGroup()
+	
+	local frameData = { width = 256, height = 256, numFrames = 4 }
+	local normalSheet = graphics.newImageSheet( "images/elements/bird1.png", frameData )
+	local colorSheet = graphics.newImageSheet( "images/elements/bird2.png", frameData )
+	local normalAnimations = {
+		{ name="fly", sheet = normalSheet, frames = {1,2,3}, time = 300},
+	}
+	local colorAnimations = {
+		{ name="fly", sheet = colorSheet, frames = {1,2,3}, time = 300},
+	}
+
+	local birdSprite = display.newSprite( normalSheet, normalAnimations )
+	birdSprite.xScale = 0.35
+	birdSprite.yScale = 0.35
+	birdSprite:setSequence("fly")
+	birdSprite:play()
+	
+	local colorSprite = display.newSprite( colorSheet, colorAnimations )
+	colorSprite.xScale = 0.35
+	colorSprite.yScale = 0.35
+	colorSprite:setSequence("fly")
+	colorSprite:play()
+	
+	local color = colorData[math.random(1,#colorData)]
+	colorSprite:setFillColor(color.r, color.g, color.b)
+	
+	bird:insert(birdSprite)
+	bird:insert(colorSprite)
+	
+	bird.colorSprite = colorSprite
+	bird.sprite = birdSprite
+	bird.value = 1
+	
+	bird.anchorChildren = true
+	
+	physics.addBody( bird, { density = 1.0, friction = 0.3, bounce = 0.2, radius = 25 } )
+	
+	return bird
+end
+
 function scene:updateScore(newScore)
 	display.remove(scoreNumber)
 	scoreNumber = nil
@@ -83,6 +142,10 @@ function scene:createScene( event )
 end
 
 function scene:willEnterScene(event)
+	physics.start()
+	physics.setGravity( 0, 6 )
+	physics.setDrawMode( "hybrid" )
+	
 	unlockTaps = 0
 	currentFrame = 0
 	
@@ -109,11 +172,18 @@ function scene:willEnterScene(event)
 	bottomPipe.y = display.contentCenterY + bottomPipeOffsetY
 	objectGroup:insert(bottomPipe)
 	
-	local gameFloor = display.newImage("images/elements/floor.png",true)
+	local bird = newBird()
+	bird.x = display.screenOriginX + 100
+	bird.y = display.contentCenterY
+	objectGroup:insert(bird)
+	
+	local gameFloor = display.newImage("images/elements/floor.png")
 	gameFloor.anchorY = 1
 	gameFloor.x = display.contentCenterX
 	gameFloor.y = display.screenOriginY + display.viewableContentHeight + 100
 	objectGroup:insert(gameFloor)
+	
+	physics.addBody( gameFloor, "static", { friction=0.5, bounce=0.3 } )
 end
 
 function scene:enterFrame(event)
@@ -136,6 +206,8 @@ function scene:exitScene( event )
 	Runtime:removeEventListener ("enterFrame", self)
 	Runtime:removeEventListener("gyroscope", background)
 	Runtime:removeEventListener("tap", sceneTouch)
+	
+	physics.stop()
 end
 
 function scene:destroyScene( event )
