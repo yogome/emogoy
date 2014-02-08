@@ -175,28 +175,28 @@ function scene:willEnterScene(event)
 	topPipeGroup = display.newGroup()
 	topPipeGroup.anchorChildren = true
 	topPipeGroup.anchorY = 0
-	topPipeGroup.x = display.contentCenterX
+	topPipeGroup.x = display.screenOriginX + display.viewableContentWidth - 200
 	topPipeGroup.y = display.contentCenterY + topPipeOffsetY
 	topPipeGroup.name = "pipe"
 	topPipeGroup.rotation = 180
 	topPipe = display.newImage("images/elements/pipe.png",true)
 	topPipeGroup:insert(topPipe)
 	physics.addBody( topPipeGroup, "kinematic", 
-		{ radius = 50, isSensor = true, shape = { -48,-520, 48,-520, 48,400, -48,400 }}, -- Receptor
+		{ radius = 50, isSensor = true, shape = { -48,-514, 48,-514, 48,400, -48,400 }}, -- Receptor
 		{ bounce = 1, friction = 0.4, density = 1, shape = { -64,-512, 64,-512, 64,512, -64,512 }})
 	
 	bottomPipeGroup = display.newGroup()
 	bottomPipeGroup.anchorChildren = true
 	bottomPipeGroup.anchorY = 0
 	bottomPipeGroup.rotation = 0
-	bottomPipeGroup.x = display.contentCenterX
+	bottomPipeGroup.x = display.screenOriginX + display.viewableContentWidth - 200
 	bottomPipeGroup.y = display.contentCenterY + bottomPipeOffsetY
 	bottomPipeGroup.name = "pipe"
 	
 	bottomPipe = display.newImage("images/elements/pipe.png",true)
 	bottomPipeGroup:insert(bottomPipe)
 	physics.addBody( bottomPipeGroup, "kinematic", 
-		{ radius = 50, isSensor = true, shape = { -48,-520, 48,-520, 48,400, -48,400 }}, -- Receptor
+		{ radius = 50, isSensor = true, shape = { -48,-514, 48,-514, 48,400, -48,400 }}, -- Receptor
 		{ bounce = 1, friction = 0.4, density = 1, shape = { -64,-512, 64,-512, 64,512, -64,512 }})
 		
 	local gameFloor = display.newImage("images/elements/floor.png")

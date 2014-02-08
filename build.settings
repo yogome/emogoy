@@ -7,11 +7,11 @@ settings = {
 	iphone = {
 		plist = {
 			UIAppFonts = {
-				"doctor.ttf",
+				"pixel.ttf",
 			},
 			UIStatusBarHidden = true,
 			UIPrerenderedIcon = true,
-			CFBundleDisplayName = 'MuerePajaro',
+			CFBundleDisplayName = 'NsheBird',
 			CFBundleIconFiles = {
 				"Icon.png",
 				"Icon@2x.png",
