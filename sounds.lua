@@ -39,11 +39,11 @@ function sounds.playSound( sound )
 end
 
 function sounds.initialize() -- Frequently used audio has to be loaded here.
-	pipeStart = audio.loadSound("sounds/pop.mp3")
-	pipeEnd = audio.loadSound("sounds/pop.mp3")
-	birdFlap = audio.loadSound("sounds/pop.mp3")
-	birdCrush = audio.loadSound("sounds/pop.mp3")
-	bloodSplat = audio.loadSound("sounds/pop.mp3")
+	pipeStart = audio.loadSound("sounds/pipestart.mp3")
+	pipeEnd = audio.loadSound("sounds/pipeend.mp3")
+	birdFlap = audio.loadSound("sounds/birdflap.mp3")
+	birdCrush = audio.loadSound("sounds/bonecrushing.mp3")
+	bloodSplat = audio.loadSound("sounds/bloodsplat.mp3")
 	birdBump = audio.loadSound("sounds/pop.mp3")
 	buttonPop = audio.loadSound("sounds/pop.mp3")
 	

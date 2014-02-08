@@ -33,17 +33,16 @@ local function openTestMenu()
 end
 
 local function sceneTouch(event)
-	sounds.pipeStart()
-	
 	if not topPipeTransition and not bottomPipeTransition then
-		topPipeTransition = protector.to(topPipe,{time = 300, y = display.contentCenterY, transition = easing.inExpo, onComplete = function()
+		sounds.pipeStart()
+		topPipeTransition = protector.to(topPipe,{time = 250, y = display.contentCenterY, transition = easing.inExpo, onComplete = function()
 			sounds.pipeEnd()
 			topPipeTransition = protector.to(topPipe,{delay = 50, time = 300, y = display.contentCenterY + topPipeOffsetY, transition = easing.inQuad, onComplete = function()
 				topPipeTransition = nil
 			end})
 		end})
 
-		bottomPipeTransition = protector.to(bottomPipe,{time = 300, y = display.contentCenterY, transition = easing.inExpo, onComplete = function()
+		bottomPipeTransition = protector.to(bottomPipe,{time = 250, y = display.contentCenterY, transition = easing.inExpo, onComplete = function()
 			bottomPipeTransition = protector.to(bottomPipe,{delay = 50, time = 300, y = display.contentCenterY + bottomPipeOffsetY, transition = easing.inQuad, onComplete = function()
 				bottomPipeTransition = nil
 			end})
