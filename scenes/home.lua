@@ -18,6 +18,7 @@ local currentFrame
 local topPipe, bottomPipe, topPipeGroup, bottomPipeGroup
 local topPipeTransition
 local bottomPipeTransition
+local birdArray
 ------------------------- Constants
 local topPipeOffsetY = -100
 local bottomPipeOffsetY = 100
@@ -67,6 +68,18 @@ local function sceneTouch(event)
 	end
 end
 
+local function checkTubeCollision( tube, object, element1, element2)
+	if tube.name == "pipe" then
+		if element1 == 1 then -- bird crusher
+			if object.name == "bird" then
+				object.remove = true
+			end
+		else
+			
+		end
+	end
+end
+
 ------------------------- class functions 
 local function newBird()
 	local bird = display.newGroup()
@@ -107,6 +120,9 @@ local function newBird()
 	
 	physics.addBody( bird, { density = 1.0, friction = 0.3, bounce = 0.2, radius = 25 } )
 	bird.isBullet = true
+	bird.name = "bird"
+	
+	table.insert(birdArray, bird)
 	
 	return bird
 end
@@ -147,6 +163,7 @@ function scene:willEnterScene(event)
 	physics.setGravity( 6, 0 )
 	physics.setDrawMode( "hybrid" )
 	
+	birdArray = {}
 	unlockTaps = 0
 	currentFrame = 0
 	
@@ -160,6 +177,7 @@ function scene:willEnterScene(event)
 	topPipeGroup.anchorY = 0
 	topPipeGroup.x = display.contentCenterX
 	topPipeGroup.y = display.contentCenterY + topPipeOffsetY
+	topPipeGroup.name = "pipe"
 	topPipeGroup.rotation = 180
 	topPipe = display.newImage("images/elements/pipe.png",true)
 	topPipeGroup:insert(topPipe)
@@ -173,6 +191,7 @@ function scene:willEnterScene(event)
 	bottomPipeGroup.rotation = 0
 	bottomPipeGroup.x = display.contentCenterX
 	bottomPipeGroup.y = display.contentCenterY + bottomPipeOffsetY
+	bottomPipeGroup.name = "pipe"
 	
 	bottomPipe = display.newImage("images/elements/pipe.png",true)
 	bottomPipeGroup:insert(bottomPipe)
@@ -187,6 +206,8 @@ function scene:willEnterScene(event)
 	objectGroup:insert(gameFloor)
 	
 	physics.addBody( gameFloor, "static", { friction=0.5, bounce=0.3 } )
+	
+	Runtime:addEventListener( "collision", self )
 end
 
 function scene:enterFrame(event)
@@ -198,6 +219,22 @@ function scene:enterFrame(event)
 		bird.x = display.screenOriginX - 100
 		bird.y = display.contentCenterY + math.random(-200,200)
 		objectGroup:insert(bird)
+	end
+	
+	for index = #birdArray,1,-1 do
+		local bird = birdArray[index]
+		if bird.x > display.screenOriginX + display.viewableContentWidth + 100 or bird.remove == true then
+			physics.removeBody(bird)
+			display.remove(bird)
+			table.remove(birdArray, index)
+		end
+	end
+end
+
+function scene:collision(event)
+	if ( event.phase == "began" ) then
+		checkTubeCollision(event.object1, event.object2, event.element1, event.element2)
+		checkTubeCollision(event.object2, event.object1, event.element2, event.element1)
 	end
 end
 
@@ -216,6 +253,13 @@ function scene:exitScene( event )
 	Runtime:removeEventListener ("enterFrame", self)
 	Runtime:removeEventListener("gyroscope", background)
 	Runtime:removeEventListener("tap", sceneTouch)
+	
+	for index = #birdArray,1,-1 do
+		local bird = birdArray[index]
+		physics.removeBody(bird)
+		display.remove(bird)
+		table.remove(birdArray, index)
+	end
 	
 	physics.stop()
 end
