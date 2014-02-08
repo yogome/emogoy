@@ -1,0 +1,11 @@
+{
+  "name": "HealthyHeroes2",
+  "version": "1.0.0",
+  "main": "main.lua",
+  "dependencies": {
+    "cacharro": "~0.1.0",
+    "dbconfig": "~0.4.2"
+  },
+  "private": true
+}
+
