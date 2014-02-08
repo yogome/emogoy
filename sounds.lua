@@ -11,7 +11,7 @@ local birdFlap
 local birdCrush 
 local bloodSplat
 local birdBump
-local buttonPop
+local pop
 
 -- Constants
 local currentChannel = 1
@@ -45,7 +45,7 @@ function sounds.initialize() -- Frequently used audio has to be loaded here.
 	birdCrush = audio.loadSound("sounds/bonecrushing.mp3")
 	bloodSplat = audio.loadSound("sounds/bloodsplat.mp3")
 	birdBump = audio.loadSound("sounds/pop.mp3")
-	buttonPop = audio.loadSound("sounds/pop.mp3")
+	pop = audio.loadSound("sounds/pop.mp3")
 	
 	soundEnabled = dbconfig("sound") or "1"
 end
@@ -68,8 +68,8 @@ end
 function sounds.birdBump( )
 	sounds.playSound(birdBump)
 end
-function sounds.buttonPop( )
-	sounds.playSound(buttonPop)
+function sounds.pop( )
+	sounds.playSound(pop)
 end
 
 return sounds

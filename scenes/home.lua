@@ -25,7 +25,7 @@ local crushBirds
 local birdsSpawned
 local birdsCrushed
 local bloodParticleArray
-local gameState -- "ready", "game", "end"
+local gameState -- "loading", ready","transition" "game", "end"
 ------------------------- Constants
 local birdFilter = {categoryBits = 1, maskBits = 2} 
 local pipeFilter = {categoryBits = 2, maskBits = 1023} 
@@ -100,18 +100,22 @@ local function pipeCrush()
 end
 
 local function startGame()
-	protector.to(companyLogo, {time = 500, x = display.screenOriginX - 500, alpha = 0, transition = easing.inQuad})
-	protector.to(logo, {time = 500, x = display.screenOriginX + display.viewableContentWidth + 500, alpha = 0, transition = easing.inQuad})
-	
-	protector.to(tapHere1, {time = 500, alpha = 0, transition = easing.outQuad})
-	protector.to(tapHere2, {time = 500, alpha = 0, transition = easing.outQuad})
-	
-	protector.to(fadeRectangle, {time = 500, alpha = 0, transition = easing.outQuad, onComplete = function()
-		gameState = "game"
-		protector.from(scoreText, {time = 500, alpha = 0, y = display.screenOriginY - 100, transition = easing.outQuad, onStart = function()
-			scoreText.isVisible = true
+	if gameState == "ready" then
+		gameState = "transition"
+		sounds.pop()
+		protector.to(companyLogo, {time = 500, x = display.screenOriginX - 500, alpha = 0, transition = easing.inQuad})
+		protector.to(logo, {time = 500, x = display.screenOriginX + display.viewableContentWidth + 500, alpha = 0, transition = easing.inQuad})
+
+		protector.to(tapHere1, {time = 500, alpha = 0, transition = easing.outQuad})
+		protector.to(tapHere2, {time = 500, alpha = 0, transition = easing.outQuad})
+
+		protector.to(fadeRectangle, {time = 500, alpha = 0, transition = easing.outQuad, onComplete = function()
+			gameState = "game"
+			protector.from(scoreText, {time = 500, alpha = 0, y = display.screenOriginY - 100, transition = easing.outQuad, onStart = function()
+				scoreText.isVisible = true
+			end})
 		end})
-	end})
+	end
 end
 
 local function sceneTouch(event)
@@ -388,14 +392,16 @@ function scene:willEnterScene(event)
 	physics.setGravity( 0, 15 )
 	physics.setVelocityIterations( 2 )
 	physics.setPositionIterations(4)
+	gameState = "loading"
 	
 	logo.alpha = 1
 	logo.x = display.contentCenterX
 	companyLogo.alpha = 1
 	companyLogo.x = display.screenOriginX + 10
-	protector.to(fadeRectangle, {delay = 100, time = 400, alpha = 0.3, transition = easing.outQuad})
+	protector.to(fadeRectangle, {delay = 100, time = 400, alpha = 0.3, transition = easing.outQuad, onComplete = function()
+		gameState = "ready"
+	end})
 	
-	gameState = "ready"
 	birdArray = {}
 	bloodParticleArray = {}
 	unlockTaps = 0
