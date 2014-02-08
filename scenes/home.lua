@@ -100,7 +100,18 @@ local function pipeCrush()
 end
 
 local function startGame()
+	protector.to(companyLogo, {time = 500, x = display.screenOriginX - 500, alpha = 0, transition = easing.inQuad})
+	protector.to(logo, {time = 500, x = display.screenOriginX + display.viewableContentWidth + 500, alpha = 0, transition = easing.inQuad})
 	
+	protector.to(tapHere1, {time = 500, alpha = 0, transition = easing.outQuad})
+	protector.to(tapHere2, {time = 500, alpha = 0, transition = easing.outQuad})
+	
+	protector.to(fadeRectangle, {time = 500, alpha = 0, transition = easing.outQuad, onComplete = function()
+		gameState = "game"
+		protector.from(scoreText, {time = 500, alpha = 0, y = display.screenOriginY - 100, transition = easing.outQuad, onStart = function()
+			scoreText.isVisible = true
+		end})
+	end})
 end
 
 local function sceneTouch(event)
@@ -270,6 +281,7 @@ local function checkFloorCollision(gameFloor, object)
 			local bloodStain = newBloodStain(math.random(1,3))
 			bloodStain.x = object.x
 			bloodStain.y = gameFloor.y - gameFloor.height
+			sounds.bloodSplat()
 		end
 	end
 end
@@ -318,26 +330,37 @@ function scene:createScene( event )
 	logo.y = display.contentCenterY - 200
 	hudGroup:insert(logo)
 	local function logoTransition()
-		transition.to( logo, { time=500, xScale = 1, yScale = 1, transition=easing.inOutQuad } )
-		transition.to( logo, { delay=500, time=1000, xScale = 1.1, yScale = 1.1, transition=easing.inOutQuad } )
+		transition.to( logo, { time=500, y = display.contentCenterY - 180 , transition=easing.inOutQuad } )
+		transition.to( logo, { delay=500, time=1000, y = display.contentCenterY - 200, transition=easing.inOutQuad } )
 	end
 	logoTransition()
 	protector.performWithDelay(1500, function()
 		logoTransition()
 	end, 0)
 	
-	
-	local tapHere1 = display.newImage("images/tap1.png")
+	tapHere1 = display.newImage("images/tap1.png")
 	tapHere1.anchorX = 1
-	tapHere1.x = display.contentCenterX - 20
+	tapHere1.x = display.contentCenterX - 40
 	tapHere1.y = display.contentCenterY
 	hudGroup:insert(tapHere1)
 	
-	local tapHere2 = display.newImage("images/tap2.png")
+	tapHere2 = display.newImage("images/tap2.png")
 	tapHere2.anchorX = 0
-	tapHere2.x = display.contentCenterX + 20
+	tapHere2.x = display.contentCenterX + 40
 	tapHere2.y = display.contentCenterY
 	hudGroup:insert(tapHere2)
+	
+	local function tapTransition()
+		transition.to( tapHere1, { time=500, xScale = 1, yScale = 1, transition=easing.inOutQuad } )
+		transition.to( tapHere1, { delay=500, time=1000, xScale = 1.1, yScale = 1.1, transition=easing.inOutQuad } )
+		
+		transition.to( tapHere2, { time=500, xScale = 1, yScale = 1, transition=easing.inOutQuad } )
+		transition.to( tapHere2, { delay=500, time=1000, xScale = 1.1, yScale = 1.1, transition=easing.inOutQuad } )
+	end
+	tapTransition()
+	protector.performWithDelay(1500, function()
+		tapTransition()
+	end, 0)
 	
 	companyLogo = display.newImage("images/company.png", true)
 	companyLogo.anchorX = 0
@@ -366,6 +389,10 @@ function scene:willEnterScene(event)
 	physics.setVelocityIterations( 2 )
 	physics.setPositionIterations(4)
 	
+	logo.alpha = 1
+	logo.x = display.contentCenterX
+	companyLogo.alpha = 1
+	companyLogo.x = display.screenOriginX + 10
 	protector.to(fadeRectangle, {delay = 100, time = 400, alpha = 0.3, transition = easing.outQuad})
 	
 	gameState = "ready"
@@ -469,11 +496,14 @@ function scene:enterFrame(event)
 
 		if crushBirds then
 			crushBirds = false
+			local birdCrushed = false
 			for index = #birdArray,1,-1 do
 				local bird = birdArray[index]
 				if bird.crush then
 					destroyBird(bird)
+					birdCrushed = true
 				end
+				if birdCrushed then sounds.birdCrush() end
 			end
 		end
 	end		
