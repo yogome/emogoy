@@ -13,6 +13,7 @@ local unlockTaps
 local backgroundGroup, background
 local hudGroup, scoreNumber
 local objectGroup
+local currentFrame
 ------------------------- Constants
 ------------------------- Functions
 local function openTestMenu()
@@ -64,12 +65,12 @@ function scene:willEnterScene(event)
 	
 	display.remove(background)
 	background = nil
-	background = gyroBG.new("images/home/background_"..math.random(1,2),1024)
+	background = gyroBG.new("images/backgrounds/bg_"..math.random(1,2),1024)
 	backgroundGroup:insert(background)
 end
 
 function scene:enterFrame(event)
-	
+	currentFrame = currentFrame + 1
 end
 
 function scene:enterScene( event )
