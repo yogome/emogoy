@@ -39,9 +39,7 @@ function scene:addButton(text, listener, rectColor)
 
 		rectangle:addEventListener("tap", function()
 			if buttonsEnabled == true then
-				sounds.coins()
 				rectangle.listener()
-				sounds.shine()
 			end
 		end)
 		
@@ -85,7 +83,6 @@ end
 function scene:enterScene(event)
 	buttonsEnabled = false
 	timer.performWithDelay(400, function()
-		sounds.stars()
 		buttonsEnabled = true
 	end)
 	display.setDefault("background", 0, 0, 0)

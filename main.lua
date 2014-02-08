@@ -52,7 +52,6 @@ Runtime:addEventListener( "key", onKeyEvent )
 Runtime:addEventListener( "memoryWarning", handleLowMemory )
 
 if cacharro.isSimulator then
-	audio.setVolume(0)
 	storyboard.gotoScene("scenes.testMenu")
 else
 	storyboard.gotoScene("scenes.home")

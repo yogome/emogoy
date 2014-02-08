@@ -14,7 +14,12 @@ local backgroundGroup, background
 local hudGroup, scoreNumber
 local objectGroup
 local currentFrame
+local topPipe, bottomPipe
+local topPipeTransition
+local bottomPipeTransition
 ------------------------- Constants
+local topPipeOffsetY = -100
+local bottomPipeOffsetY = 100
 ------------------------- Functions
 local function openTestMenu()
 	if buttonsEnabled == true then
@@ -24,6 +29,25 @@ local function openTestMenu()
 			unlockTaps = 0
 			storyboard.gotoScene("scenes.testMenu")
 		end
+	end
+end
+
+local function sceneTouch(event)
+	sounds.pipeStart()
+	
+	if not topPipeTransition and not bottomPipeTransition then
+		topPipeTransition = protector.to(topPipe,{time = 300, y = display.contentCenterY, transition = easing.inExpo, onComplete = function()
+			sounds.pipeEnd()
+			topPipeTransition = protector.to(topPipe,{delay = 50, time = 300, y = display.contentCenterY + topPipeOffsetY, transition = easing.inQuad, onComplete = function()
+				topPipeTransition = nil
+			end})
+		end})
+
+		bottomPipeTransition = protector.to(bottomPipe,{time = 300, y = display.contentCenterY, transition = easing.inExpo, onComplete = function()
+			bottomPipeTransition = protector.to(bottomPipe,{delay = 50, time = 300, y = display.contentCenterY + bottomPipeOffsetY, transition = easing.inQuad, onComplete = function()
+				bottomPipeTransition = nil
+			end})
+		end})
 	end
 end
 
@@ -54,7 +78,7 @@ function scene:createScene( event )
     group:insert(hudGroup)
 	
 	objectGroup = display.newGroup()
-	backgroundGroup:insert(objectGroup)
+	group:insert(objectGroup)
 	
 	testMenuButton:toFront()
 end
@@ -67,10 +91,35 @@ function scene:willEnterScene(event)
 	background = nil
 	background = gyroBG.new("images/backgrounds/bg_"..math.random(1,2),1024)
 	backgroundGroup:insert(background)
+	
+	topPipe = display.newImage("images/elements/pipe.png",true)
+	topPipe.anchorY = 0
+	topPipe.rotation = 180
+	topPipe.xScale = 0.6
+	topPipe.yScale = 0.6
+	topPipe.x = display.contentCenterX
+	topPipe.y = display.contentCenterY + topPipeOffsetY
+	objectGroup:insert(topPipe)
+	
+	bottomPipe = display.newImage("images/elements/pipe.png",true)
+	bottomPipe.anchorY = 0
+	bottomPipe.rotation = 0
+	bottomPipe.xScale = 0.6
+	bottomPipe.yScale = 0.6
+	bottomPipe.x = display.contentCenterX
+	bottomPipe.y = display.contentCenterY + bottomPipeOffsetY
+	objectGroup:insert(bottomPipe)
+	
+	local gameFloor = display.newImage("images/elements/floor.png",true)
+	gameFloor.anchorY = 1
+	gameFloor.x = display.contentCenterX
+	gameFloor.y = display.screenOriginY + display.viewableContentHeight + 100
+	objectGroup:insert(gameFloor)
 end
 
 function scene:enterFrame(event)
 	currentFrame = currentFrame + 1
+	
 end
 
 function scene:enterScene( event )
@@ -79,7 +128,7 @@ function scene:enterScene( event )
 	music.playTrack(1)
 	
 	Runtime:addEventListener("enterFrame", self)
-	
+	Runtime:addEventListener("tap", sceneTouch)
     Runtime:addEventListener("gyroscope", background)
 	storyboard.printMemUsage()
 end
@@ -87,6 +136,7 @@ end
 function scene:exitScene( event )
 	Runtime:removeEventListener ("enterFrame", self)
 	Runtime:removeEventListener("gyroscope", background)
+	Runtime:removeEventListener("tap", sceneTouch)
 end
 
 function scene:destroyScene( event )

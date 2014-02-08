@@ -9,24 +9,16 @@ function gyroBG.new(imagePath, backgroundSize)
 	background.gyroTransitions = {}
 	
 	background.backgrounds = {}
-    local backGroundScale = display.actualContentWidth / backgroundSize
+    local backGroundScale = display.viewableContentHeight / backgroundSize
 	
-	local notFound = false
-	local index = 0
-	repeat
-		index = index + 1
-		local internalBG = display.newImageRect( imagePath..index..".png",backgroundSize,backgroundSize)
-		if internalBG then
-			internalBG.x = display.contentCenterX
-			internalBG.y = display.contentCenterY
-			internalBG.xScale = backGroundScale
-			internalBG.yScale = backGroundScale
-			background:insert(internalBG)
-			background.backgrounds[index] = internalBG
-		else
-			notFound = true
-		end
-	until notFound
+	local internalBG = display.newImageRect( imagePath..".png",backgroundSize,backgroundSize)
+	internalBG.x = display.contentCenterX
+	internalBG.y = display.contentCenterY
+	internalBG.xScale = backGroundScale
+	internalBG.yScale = backGroundScale
+	background:insert(internalBG)
+	background.backgrounds[1] = internalBG
+		
 	
 	function background.gyroscope(self, event)
 		for transitionIndex = 1, #background.gyroTransitions do
