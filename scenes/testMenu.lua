@@ -2,6 +2,7 @@
 local storyboard = require( "storyboard" )
 local sounds = require ( "sounds" )
 local dbconfig = require ( "vendor.dbconfig.dbconfig" )
+local physics = require( "physics" )
 local scene = storyboard.newScene()
 ------------------------- Variables
 local performance 
@@ -14,6 +15,12 @@ end
 
 local function toggleFPS()
 	if performance.alpha <= 0 then performance.alpha = 0.7 else performance.alpha = 0 end
+end
+local function setDrawHybrid()
+	physics.setDrawMode( "hybrid" )
+end
+local function setDrawNormal()
+	physics.setDrawMode( "normal" )
 end
 
 ------------------------- Class functions
@@ -65,9 +72,11 @@ function scene:createScene(event)
 	
 	------------------------- Buttons
 	
-	self:addButton("Go to game", goGame,{0.2,0.2,0.2})
+	self:addButton("Draw hybrid", setDrawHybrid,{0.2,0.2,0.5})
+	self:addButton("Draw normal", setDrawNormal,{0.2,0.2,0.5})
+	self:addButton("Toggle FPS", toggleFPS,{0.2,0.2,0.8})
 	self:skipColumn()
-	
+	self:addButton("Go to game", goGame,{0.2,0.2,0.2})
 	------------------------- Initialization
 	local fps = require("helpers.fps")
 	performance = fps:new()
