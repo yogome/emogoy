@@ -19,6 +19,7 @@ local topPipe, bottomPipe, topPipeGroup, bottomPipeGroup
 local topPipeTransition
 local bottomPipeTransition
 local birdArray
+local logo, gameOver
 ------------------------- Constants
 local topPipeOffsetY = -100
 local bottomPipeOffsetY = 100
@@ -53,14 +54,19 @@ end
 local function sceneTouch(event)
 	if not topPipeTransition and not bottomPipeTransition then
 		sounds.pipeStart()
+		topPipeGroup.crushing = true
+		bottomPipeGroup.crushing = true
+		
 		topPipeTransition = protector.to(topPipeGroup,{time = 210, y = display.contentCenterY, transition = easing.inExpo, onComplete = function()
 			sounds.pipeEnd()
+			topPipeGroup.crushing = false
 			topPipeTransition = protector.to(topPipeGroup,{delay = 50, time = 300, y = display.contentCenterY + topPipeOffsetY, transition = easing.inQuad, onComplete = function()
 				topPipeTransition = nil
 			end})
 		end})
 
 		bottomPipeTransition = protector.to(bottomPipeGroup,{time = 210, y = display.contentCenterY, transition = easing.inExpo, onComplete = function()
+			bottomPipeGroup.crushing = false
 			bottomPipeTransition = protector.to(bottomPipeGroup,{delay = 50, time = 300, y = display.contentCenterY + bottomPipeOffsetY, transition = easing.inQuad, onComplete = function()
 				bottomPipeTransition = nil
 			end})
@@ -68,19 +74,33 @@ local function sceneTouch(event)
 	end
 end
 
-local function checkTubeCollision( tube, object, element1, element2)
-	if tube.name == "pipe" then
-		if element1 == 1 then -- bird crusher
-			if object.name == "bird" then
-				object.remove = true
-			end
-		else
-			
-		end
-	end
+local function newBloodSplash()
+	local bloodSplash = display.newGroup()
+	bloodSplash.anchorChildren = true
+	bloodSplash.anchorX = 1
+	
+	local frameData = { width = 512, height = 256, numFrames = 8 }
+	local bloodSheet = graphics.newImageSheet( "images/blood/bloodSplash1.png", frameData )
+	local bloodAnimations = {
+		{ name="splash", sheet = bloodSheet, start = 1, count = 8, loopCount = 1, time = 400},
+	}
+
+	local sprite = display.newSprite( bloodSheet, bloodAnimations )
+	sprite:setSequence("splash")
+	sprite:play()
+	bloodSplash:insert(sprite)
+	bloodSplash.xScale = 0.6
+	bloodSplash.yScale = 0.6
+	bloodSplash.sprite = sprite
+	
+	protector.performWithDelay(400, function()
+		display.remove(bloodSplash)
+		bloodSplash = nil
+	end)
+	
+	return bloodSplash
 end
 
-------------------------- class functions 
 local function newBird()
 	local bird = display.newGroup()
 	
@@ -127,6 +147,23 @@ local function newBird()
 	return bird
 end
 
+local function checkTubeCollision( tube, object, element1, element2)
+	if tube.name == "pipe" then
+		if element1 == 1 and tube.crushing then -- bird crusher
+			if object.name == "bird" then
+				object.remove = true
+				local bloodSplash = newBloodSplash()
+				bloodSplash.x = object.x
+				bloodSplash.y = object.y
+				objectGroup:insert(bloodSplash)
+			end
+		else
+			
+		end
+	end
+end
+
+------------------------- class functions 
 function scene:updateScore(newScore)
 	display.remove(scoreNumber)
 	scoreNumber = nil
@@ -149,11 +186,29 @@ function scene:createScene( event )
     backgroundGroup = display.newGroup()
     group:insert(backgroundGroup)
 	
-    hudGroup = display.newGroup()
-    group:insert(hudGroup)
-	
 	objectGroup = display.newGroup()
 	group:insert(objectGroup)
+	
+	hudGroup = display.newGroup()
+    group:insert(hudGroup)
+	
+	logo = display.newImage("images/logo.png", true)
+	logo.x = display.contentCenterX
+	logo.y = display.screenOriginY + 200
+	local logoScale = display.viewableContentWidth / 1024
+	logo.xScale = logoScale
+	logo.yScale = logoScale
+	logo.isVisible = false
+	hudGroup:insert(logo)
+	
+	gameOver = display.newImage("images/gameover.png", true)
+	gameOver.x = display.contentCenterX
+	gameOver.y = display.contentCenterY
+	local gameOverScale = display.viewableContentWidth / 1024
+	gameOver.xScale = gameOverScale
+	gameOver.yScale = gameOverScale
+	gameOver.isVisible = false
+	hudGroup:insert(gameOver)
 	
 	testMenuButton:toFront()
 end
@@ -161,7 +216,7 @@ end
 function scene:willEnterScene(event)
 	physics.start()
 	physics.setGravity( 6, 0 )
-	physics.setDrawMode( "hybrid" )
+	--physics.setDrawMode( "hybrid" )
 	
 	birdArray = {}
 	unlockTaps = 0
@@ -184,6 +239,7 @@ function scene:willEnterScene(event)
 	physics.addBody( topPipeGroup, "kinematic", 
 		{ radius = 50, isSensor = true, shape = { -48,-514, 48,-514, 48,400, -48,400 }}, -- Receptor
 		{ bounce = 1, friction = 0.4, density = 1, shape = { -64,-512, 64,-512, 64,512, -64,512 }})
+	objectGroup:insert(topPipeGroup)
 	
 	bottomPipeGroup = display.newGroup()
 	bottomPipeGroup.anchorChildren = true
@@ -198,6 +254,7 @@ function scene:willEnterScene(event)
 	physics.addBody( bottomPipeGroup, "kinematic", 
 		{ radius = 50, isSensor = true, shape = { -48,-514, 48,-514, 48,400, -48,400 }}, -- Receptor
 		{ bounce = 1, friction = 0.4, density = 1, shape = { -64,-512, 64,-512, 64,512, -64,512 }})
+	objectGroup:insert(bottomPipeGroup)
 		
 	local gameFloor = display.newImage("images/elements/floor.png")
 	gameFloor.anchorY = 1
