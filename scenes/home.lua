@@ -197,8 +197,17 @@ local function newBird()
 	physics.addBody( bird, { density = 1.0, friction = 0.3, bounce = 0.2, radius = 25, filter = birdFilter} )
 	bird.isBullet = true
 	bird.name = "bird"
+	bird.soundPlay = 0
 	
 	function bird:update()
+		if self.sprite.frame == 3 then
+			self.soundPlay = self.soundPlay + 1
+			if self.soundPlay == 8 then
+				sounds.birdFlap()
+				self.soundPlay = 0
+			end
+			
+		end
 		local vX, vY = self:getLinearVelocity()
 		if self.y > display.contentCenterY then
 			if vY > - 200 then
