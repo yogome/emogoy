@@ -699,6 +699,7 @@ function scene:exitScene( event )
 	Runtime:removeEventListener ("enterFrame", self)
 	Runtime:removeEventListener("gyroscope", background)
 	Runtime:removeEventListener("tap", sceneTouch)
+	Runtime:RemoveEventListener("collision", self )
 	
 	for index = #birdArray,1,-1 do
 		local bird = birdArray[index]
@@ -708,7 +709,7 @@ function scene:exitScene( event )
 	end
 	
 	physics.stop()
-	Runtime:RemoveEventListener( "collision", self )
+	
 end
 
 function scene:destroyScene( event )
