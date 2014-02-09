@@ -334,7 +334,7 @@ local function gameOver()
 	protector.from(gameOverImage, {time = 500, alpha = 0, transition = easing.outQuad, onStart = function()
 		gameOverImage.isVisible = true
 		
-		local medalIndex = math.floor(score / 200)
+		local medalIndex = math.floor(score / 150)
 		if medalIndex > 0 then
 			medal.isVisible = true
 			if medalIndex > #medalColors then
