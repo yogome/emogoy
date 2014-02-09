@@ -19,7 +19,7 @@ local topPipe, bottomPipe, topPipeGroup, bottomPipeGroup
 local topPipeTransition
 local bottomPipeTransition
 local birdArray
-local companyLogo, gameOver
+local companyLogo, gameOverImage
 local score, scoreText
 local crushBirds
 local birdsSpawned
@@ -195,6 +195,7 @@ local function newBird()
 	bird.anchorChildren = true
 	
 	physics.addBody( bird, { density = 1.0, friction = 0.3, bounce = 0.2, radius = 25, filter = birdFilter} )
+	bird.isFixedRotation = true
 	bird.isBullet = true
 	bird.name = "bird"
 	bird.soundPlay = 0
@@ -294,9 +295,23 @@ local function checkFloorCollision(gameFloor, object)
 			local bloodStain = newBloodStain(math.random(1,3))
 			bloodStain.x = object.x
 			bloodStain.y = gameFloor.y - gameFloor.height
+			objectGroup:insert(bloodStain)
 			sounds.bloodSplat()
 		end
 	end
+end
+
+local function gameOver()
+	gameState = "transition"
+	physics.pause()
+	protector.to(fadeRectangle, {time = 500, alpha = 0.6, transition = easing.outQuad})
+	protector.from(gameOverImage, {time = 500, alpha = 0, transition = easing.outQuad, onStart = function()
+		gameOverImage.isVisible = true
+	end, onComplete = function()
+		transition.to(gameOverImage, {time = 500, y = display.contentCenterY - 200, transition = easing.outQuad, onComplete = function()
+			gameState = "end"
+		end})
+	end})
 end
 
 ------------------------- class functions 
@@ -384,14 +399,14 @@ function scene:createScene( event )
 	companyLogo.yScale = 0.2
 	hudGroup:insert(companyLogo)
 	
-	gameOver = display.newImage("images/gameover.png", true)
-	gameOver.x = display.contentCenterX
-	gameOver.y = display.contentCenterY
+	gameOverImage = display.newImage("images/gameover.png", true)
+	gameOverImage.x = display.contentCenterX
+	gameOverImage.y = display.contentCenterY
 	local gameOverScale = display.viewableContentWidth / 1024
-	gameOver.xScale = gameOverScale
-	gameOver.yScale = gameOverScale
-	gameOver.isVisible = false
-	hudGroup:insert(gameOver)
+	gameOverImage.xScale = gameOverScale
+	gameOverImage.yScale = gameOverScale
+	gameOverImage.isVisible = false
+	hudGroup:insert(gameOverImage)
 	
 	testMenuButton:toFront()
 end
@@ -403,6 +418,8 @@ function scene:willEnterScene(event)
 	physics.setPositionIterations(4)
 	gameState = "loading"
 	
+	gameOverImage.y = display.contentCenterY
+	gameOverImage.isVisible = false
 	logo.alpha = 1
 	logo.x = display.contentCenterX
 	companyLogo.alpha = 1
@@ -485,7 +502,14 @@ function scene:enterFrame(event)
 
 		for index = #birdArray,1,-1 do
 			local bird = birdArray[index]
-			if bird.x > display.screenOriginX + display.viewableContentWidth + 100 or bird.remove == true then
+			if bird.x > display.screenOriginX + display.viewableContentWidth + 100 then
+				if bird.y > display.contentCenterY - 200 and bird.y < display.contentCenterY + 100 then
+					bird.remove = true
+					gameOver()
+				end
+			end
+				
+			if bird.remove == true then
 				physics.removeBody(bird)
 				display.remove(bird)
 				table.remove(birdArray, index)
