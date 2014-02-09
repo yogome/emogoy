@@ -30,7 +30,7 @@ local bloodParticleArray
 local medal, endBestScoreText, newBestScore, endCurrentScore, endRetry, endShare
 local tapHere1, tapHere2
 local gameState -- "loading", ready","transition" "game", "end"
-local fadeRectangle, logo
+local fadeRectangle, logo, gameFloor
 ------------------------- Constants
 local birdFilter = {categoryBits = 1, maskBits = 2} 
 local pipeFilter = {categoryBits = 2, maskBits = 1023} 
@@ -298,13 +298,13 @@ local function checkTubeCollision( tube, object, element1, element2)
 	end
 end
 
-local function checkFloorCollision(gameFloor, object)
-	if gameFloor.name == "floor" then
+local function checkFloorCollision(supposedFloor, object)
+	if supposedFloor.name == "floor" then
 		if object.name == "bloodParticle" then
 			object.remove = true
 			local bloodStain = newBloodStain(math.random(1,3))
 			bloodStain.x = object.x
-			bloodStain.y = gameFloor.y - gameFloor.height
+			bloodStain.y = supposedFloor.y - supposedFloor.height
 			objectGroup:insert(bloodStain)
 			sounds.bloodSplat()
 		end
@@ -409,6 +409,34 @@ function scene:createScene( event )
 	
 	hudGroup = display.newGroup()
     group:insert(hudGroup)
+	
+		topPipeGroup = display.newGroup()
+	topPipeGroup.anchorChildren = true
+	topPipeGroup.anchorY = 0
+	topPipeGroup.x = display.screenOriginX + display.viewableContentWidth - 200
+	topPipeGroup.y = display.contentCenterY + topPipeOffsetY
+	topPipeGroup.name = "pipe"
+	topPipeGroup.rotation = 180
+	topPipe = display.newImage("images/elements/pipe.png",true)
+	topPipeGroup:insert(topPipe)
+	objectGroup:insert(topPipeGroup)
+		bottomPipeGroup = display.newGroup()
+	bottomPipeGroup.anchorChildren = true
+	bottomPipeGroup.anchorY = 0
+	bottomPipeGroup.rotation = 0
+	bottomPipeGroup.x = display.screenOriginX + display.viewableContentWidth - 200
+	bottomPipeGroup.y = display.contentCenterY + bottomPipeOffsetY
+	bottomPipeGroup.name = "pipe"
+	bottomPipe = display.newImage("images/elements/pipe.png",true)
+	bottomPipeGroup:insert(bottomPipe)
+	objectGroup:insert(bottomPipeGroup)
+	
+	gameFloor = display.newImage("images/elements/floor.png")
+	gameFloor.anchorY = 1
+	gameFloor.x = display.contentCenterX
+	gameFloor.y = display.screenOriginY + display.viewableContentHeight + 100
+	gameFloor.name = "floor"
+	objectGroup:insert(gameFloor)
 	
 	fadeRectangle = display.newRect(display.contentCenterX, display.contentCenterY, display.viewableContentWidth + 4, display.viewableContentHeight + 4)
 	fadeRectangle:setFillColor(0, 1)
@@ -567,42 +595,14 @@ function scene:willEnterScene(event)
 	background = gyroBG.new("images/backgrounds/bg_"..math.random(1,2),1024)
 	backgroundGroup:insert(background)
 	
-	topPipeGroup = display.newGroup()
-	topPipeGroup.anchorChildren = true
-	topPipeGroup.anchorY = 0
-	topPipeGroup.x = display.screenOriginX + display.viewableContentWidth - 200
-	topPipeGroup.y = display.contentCenterY + topPipeOffsetY
-	topPipeGroup.name = "pipe"
-	topPipeGroup.rotation = 180
-	topPipe = display.newImage("images/elements/pipe.png",true)
-	topPipeGroup:insert(topPipe)
 	physics.addBody( topPipeGroup, "kinematic", 
 		{ bounce = 2, friction = 0, density = 1, filter = pipeFilter, shape = { -64,-512, 64,-512, 64,512, -64,512 }})
 	topPipeGroup.isBullet = true
-	objectGroup:insert(topPipeGroup)
 	
-	bottomPipeGroup = display.newGroup()
-	bottomPipeGroup.anchorChildren = true
-	bottomPipeGroup.anchorY = 0
-	bottomPipeGroup.rotation = 0
-	bottomPipeGroup.x = display.screenOriginX + display.viewableContentWidth - 200
-	bottomPipeGroup.y = display.contentCenterY + bottomPipeOffsetY
-	bottomPipeGroup.name = "pipe"
-	
-	bottomPipe = display.newImage("images/elements/pipe.png",true)
-	bottomPipeGroup:insert(bottomPipe)
 	physics.addBody( bottomPipeGroup, "kinematic", 
 		{ bounce = 2, friction = 0, density = 1, filter = pipeFilter, shape = { -64,-512, 64,-512, 64,512, -64,512 }})
 	bottomPipeGroup.isBullet = true
-	objectGroup:insert(bottomPipeGroup)
 		
-	local gameFloor = display.newImage("images/elements/floor.png")
-	gameFloor.anchorY = 1
-	gameFloor.x = display.contentCenterX
-	gameFloor.y = display.screenOriginY + display.viewableContentHeight + 100
-	gameFloor.name = "floor"
-	objectGroup:insert(gameFloor)
-	
 	physics.addBody( gameFloor, "static", { filter = floorFilter, friction=0.5, bounce=0.3 } )
 end
 
@@ -697,6 +697,13 @@ function scene:exitScene( event )
 	Runtime:removeEventListener ("enterFrame", self)
 	Runtime:removeEventListener("gyroscope", background)
 	Runtime:removeEventListener("tap", sceneTouch)
+	
+	for index = #bloodParticleArray,1,-1 do
+		local bloodParticle = bloodParticleArray[index]
+		physics.removeBody(bloodParticle)
+		display.remove(bloodParticle)
+		table.remove(bloodParticleArray, index)
+	end
 	
 	for index = #birdArray,1,-1 do
 		local bird = birdArray[index]
