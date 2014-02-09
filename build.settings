@@ -12,6 +12,7 @@ settings = {
 			UIStatusBarHidden = true,
 			UIPrerenderedIcon = true,
 			CFBundleDisplayName = 'NsheBird',
+			FacebookAppID = "251337851713033",
 			CFBundleIconFiles = {
 				"Icon.png",
 				"Icon@2x.png",

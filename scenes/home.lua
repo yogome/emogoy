@@ -293,7 +293,6 @@ local function checkTubeCollision( tube, object, element1, element2)
 	if tube.name == "pipe" then
 		if object.name == "bird" then
 			object.value = object.value + 1
-			sounds.bounce()
 			object:applyLinearImpulse(-130 + (15 * object.value),0,0,0)
 		end
 	end
@@ -597,7 +596,12 @@ function scene:willEnterScene(event)
 	
 	display.remove(background)
 	background = nil
-	background = gyroBG.new("images/backgrounds/bg_"..math.random(1,2),1024)
+	background = display.newImage("images/backgrounds/bg_"..math.random(1,2)..".png",true)
+	background.x = display.contentCenterX
+	background.y = display.contentCenterY
+	local backGroundScale = display.viewableContentHeight / 1024
+	background.xScale = backGroundScale
+	background.yScale = backGroundScale
 	backgroundGroup:insert(background)
 	
 	physics.addBody( topPipeGroup, "kinematic", 
@@ -694,13 +698,11 @@ function scene:enterScene( event )
 	
 	Runtime:addEventListener("enterFrame", self)
 	Runtime:addEventListener("touch", sceneTouch)
-    Runtime:addEventListener("gyroscope", background)
 	storyboard.printMemUsage()
 end
 
 function scene:exitScene( event )
 	Runtime:removeEventListener ("enterFrame", self)
-	Runtime:removeEventListener("gyroscope", background)
 	Runtime:removeEventListener("tap", sceneTouch)
 	
 	for index = #bloodParticleArray,1,-1 do
