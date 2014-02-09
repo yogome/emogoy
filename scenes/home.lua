@@ -20,12 +20,16 @@ local topPipeTransition
 local bottomPipeTransition
 local birdArray
 local companyLogo, gameOverImage
-local score, scoreText
+local score, scoreText, highScore
+local endScreenGroup, endScreen
 local crushBirds
 local birdsSpawned
 local birdsCrushed
 local bloodParticleArray
+local medal, endBestScoreText, newBestScore, endCurrentScore, endRetry, endShare
+local tapHere1, tapHere2
 local gameState -- "loading", ready","transition" "game", "end"
+local fadeRectangle, logo
 ------------------------- Constants
 local birdFilter = {categoryBits = 1, maskBits = 2} 
 local pipeFilter = {categoryBits = 2, maskBits = 1023} 
@@ -316,7 +320,7 @@ local function gameOver()
 	protector.from(gameOverImage, {time = 500, alpha = 0, transition = easing.outQuad, onStart = function()
 		gameOverImage.isVisible = true
 		
-		local medalIndex = math.floor(score / 10)
+		local medalIndex = math.floor(score / 200)
 		if medalIndex > 0 then
 			medal.isVisible = true
 			if medalIndex > #medalColors then
@@ -352,6 +356,18 @@ local function gameOver()
 			gameState = "end"
 		end})
 	end})
+end
+
+local function retryGame()
+	if gameState == "end" then
+		gameState = "loading"
+		sounds.pop()
+		storyboard.gotoScene("scenes.home")
+	end
+end
+
+local function shareGame()
+	
 end
 
 ------------------------- class functions 
@@ -473,6 +489,18 @@ function scene:createScene( event )
 	endCurrentScore.y = display.contentCenterY - 35
 	endScreenGroup:insert(endCurrentScore)
 	
+	endRetry = display.newImage("images/end/retry.png")
+	endRetry.x = display.contentCenterX - 120
+	endRetry.y = display.contentCenterY + 210
+	endScreenGroup:insert(endRetry)
+	endRetry:addEventListener("tap", retryGame)
+	
+	endShare = display.newImage("images/end/share.png")
+	endShare.x = display.contentCenterX + 120
+	endShare.y = display.contentCenterY + 210
+	endScreenGroup:insert(endShare)
+	endShare:addEventListener("tap", shareGame)
+	
 	gameOverImage = display.newImage("images/gameover.png", true)
 	gameOverImage.x = display.contentCenterX
 	gameOverImage.y = display.contentCenterY
@@ -494,6 +522,8 @@ function scene:willEnterScene(event)
 	
 	highScore = tonumber(dbconfig("best")) or 0
 	
+	tapHere1.alpha = 1
+	tapHere2.alpha = 1
 	medal.isVisible = false
 	newBestScore.isVisible = false
 	scoreText.isVisible = false
@@ -666,6 +696,7 @@ function scene:exitScene( event )
 	end
 	
 	physics.stop()
+	Runtime:RemoveEventListener( "collision", self )
 end
 
 function scene:destroyScene( event )
