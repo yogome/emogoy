@@ -8,6 +8,7 @@ local gyroBG = require( "helpers.gyroBackground" )
 local ui = require( "helpers.ui" )
 local physics = require( "physics" )
 local facebook = require( "facebook" )
+local log = require("vendor.log.log")
 local scene = storyboard.newScene()
 ------------------------- Variables
 local buttonsEnabled 
@@ -367,6 +368,7 @@ end
 
 local function shareGame()
 	local function listener( event )
+		log(event)
 		if ( "session" == event.type ) then
 			print("Entered session")
 			if ( "login" == event.phase ) then
