@@ -7,6 +7,7 @@ local protector = require( "helpers.protector" )
 local gyroBG = require( "helpers.gyroBackground" )
 local ui = require( "helpers.ui" )
 local physics = require( "physics" )
+local facebook = require( "facebook" )
 local scene = storyboard.newScene()
 ------------------------- Variables
 local buttonsEnabled 
@@ -147,7 +148,7 @@ local function newBloodSplash()
 	bloodSplash.anchorX = 1
 	
 	local frameData = { width = 512, height = 256, numFrames = 8 }
-	local bloodSheet = graphics.newImageSheet( "images/blood/bloodSplash1.png", frameData )
+	local bloodSheet = graphics.newImageSheet( "images/blood/bloodsplash1.png", frameData )
 	local bloodAnimations = {
 		{ name="splash", sheet = bloodSheet, start = 1, count = 8, loopCount = 1, time = 400},
 	}
@@ -294,6 +295,7 @@ local function checkTubeCollision( tube, object, element1, element2)
 	if tube.name == "pipe" then
 		if object.name == "bird" then
 			object.value = object.value + 1
+			sounds.bounce()
 			object:applyLinearImpulse(-130 + (15 * object.value),0,0,0)
 		end
 	end
@@ -367,7 +369,17 @@ local function retryGame()
 end
 
 local function shareGame()
-	
+	local function listener( event )
+		if ( "session" == event.type ) then
+			if ( "login" == event.phase ) then
+				facebook.showDialog( "apprequests", { message="I just scored"..score.." on NsheBird! get revenge on those nasty birds!" } )
+			end
+		elseif ( "dialog" == event.type ) then
+			print( event.response )
+		end
+	end
+
+	facebook.login( "251337851713033", listener )
 end
 
 ------------------------- class functions 
