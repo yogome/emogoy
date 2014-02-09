@@ -3,10 +3,12 @@ local storyboard = require( "storyboard" )
 local sounds = require ( "sounds" )
 local dbconfig = require ( "vendor.dbconfig.dbconfig" )
 local physics = require( "physics" )
+local protector = require( "helpers.protector" )
 local scene = storyboard.newScene()
 ------------------------- Variables
 local performance 
 local buttonsEnabled = false
+local devGroup
 ------------------------- Constants
 ------------------------- Functions
 local function goGame()
@@ -21,6 +23,9 @@ local function setDrawHybrid()
 end
 local function setDrawNormal()
 	physics.setDrawMode( "normal" )
+end
+local function easterEgg()
+	if devGroup.alpha <= 0 then protector.to(devGroup, {time = 500, alpha = 1, transition = easing.outQuad}) end
 end
 
 ------------------------- Class functions
@@ -75,6 +80,7 @@ function scene:createScene(event)
 	self:addButton("Draw hybrid", setDrawHybrid,{0.2,0.2,0.5})
 	self:addButton("Draw normal", setDrawNormal,{0.2,0.2,0.5})
 	self:addButton("Toggle FPS", toggleFPS,{0.2,0.2,0.8})
+	self:addButton("", easterEgg,{0,0,0})
 	self:skipColumn()
 	self:addButton("Go to game", goGame,{0.2,0.2,0.2})
 	------------------------- Initialization
@@ -83,6 +89,31 @@ function scene:createScene(event)
 	performance.x = display.screenOriginX + display.viewableContentWidth - 85
 	performance.y = display.screenOriginY + display.viewableContentHeight - 25
 	performance.alpha = 0;
+	
+	devGroup = display.newGroup()
+	devGroup.alpha = 0
+	scene.view:insert(devGroup)
+	
+	local dev = display.newImage("images/dev/yogo.png")
+	dev.anchorX = 1; dev.anchorY = 1
+	dev.x = display.screenOriginX + display.viewableContentWidth - 10
+	dev.y = display.screenOriginY + display.viewableContentHeight - 10
+	devGroup:insert(dev)
+	
+	local devBalloon = display.newImage("images/dev/balloon.png")
+	devBalloon.x = dev.x - dev.width
+	devBalloon.y = dev.y - dev.height
+	devGroup:insert(devBalloon)
+	
+	local devText1 = display.newText("Enjoy",0,0,"pixel",35)
+	devText1:setFillColor(0)
+	devText1.x = devBalloon.x; devText1.y = devBalloon.y - 45
+	devGroup:insert(devText1)
+	local devText2 = display.newText("the game!",0,0,"pixel",35)
+	devText2:setFillColor(0)
+	devText2.x = devBalloon.x; devText2.y = devBalloon.y + 5
+	devGroup:insert(devText2)
+	
 end
 
 function scene:destroyScene()
