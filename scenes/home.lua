@@ -77,13 +77,10 @@ local function angleBetweenPoints( a, b )
 end
 
 local function openTestMenu()
-	if buttonsEnabled == true then
-		unlockTaps = unlockTaps + 1
-		if unlockTaps == 5 then
-			buttonsEnabled = false
-			unlockTaps = 0
-			storyboard.gotoScene("scenes.testMenu")
-		end
+	unlockTaps = unlockTaps + 1
+	if unlockTaps == 5 then
+		unlockTaps = 0
+		storyboard.gotoScene("scenes.testMenu")
 	end
 end
 
@@ -523,6 +520,7 @@ function scene:createScene( event )
 	hudGroup:insert(gameOverImage)
 	
 	testMenuButton:toFront()
+	Runtime:addEventListener( "collision", self )
 end
 
 function scene:willEnterScene(event)
@@ -604,10 +602,6 @@ function scene:willEnterScene(event)
 	objectGroup:insert(gameFloor)
 	
 	physics.addBody( gameFloor, "static", { filter = floorFilter, friction=0.5, bounce=0.3 } )
-	
-	pcall(function()
-		Runtime:addEventListener( "collision", self )
-	end)
 end
 
 function scene:enterFrame(event)
@@ -701,7 +695,6 @@ function scene:exitScene( event )
 	Runtime:removeEventListener ("enterFrame", self)
 	Runtime:removeEventListener("gyroscope", background)
 	Runtime:removeEventListener("tap", sceneTouch)
-	Runtime:RemoveEventListener("collision", self )
 	
 	for index = #birdArray,1,-1 do
 		local bird = birdArray[index]
