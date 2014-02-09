@@ -605,7 +605,9 @@ function scene:willEnterScene(event)
 	
 	physics.addBody( gameFloor, "static", { filter = floorFilter, friction=0.5, bounce=0.3 } )
 	
-	Runtime:addEventListener( "collision", self )
+	pcall(function()
+		Runtime:addEventListener( "collision", self )
+	end)
 end
 
 function scene:enterFrame(event)
