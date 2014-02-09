@@ -226,7 +226,7 @@ local function newBird()
 	function bird:update()
 		if self.sprite.frame == 3 then
 			self.soundPlay = self.soundPlay + 1
-			if self.soundPlay == 8 then
+			if self.soundPlay == 15 then
 				sounds.birdFlap()
 				self.soundPlay = 0
 			end
@@ -314,12 +314,14 @@ end
 local function checkFloorCollision(supposedFloor, object)
 	if supposedFloor.name == "floor" then
 		if object.name == "bloodParticle" then
-			object.remove = true
-			local bloodStain = newBloodStain(math.random(1,3))
-			bloodStain.x = object.x
-			bloodStain.y = supposedFloor.y - supposedFloor.height
-			objectGroup:insert(bloodStain)
-			sounds.bloodSplat()
+			if not object.remove then
+				object.remove = true
+				local bloodStain = newBloodStain(math.random(1,3))
+				bloodStain.x = object.x
+				bloodStain.y = supposedFloor.y - supposedFloor.height
+				objectGroup:insert(bloodStain)
+				sounds.bloodSplat()
+			end
 		end
 	end
 end
@@ -393,6 +395,35 @@ local function shareGame()
 	end
 
 	facebook.login( "251337851713033", listener )
+end
+
+local function stainPipes()
+	local topPipeStain = display.newImage("images/blood/pipestain"..math.random(1,3)..".png")
+	topPipeStain.anchorY = 0
+	topPipeStain.y = -topPipeGroup.height/2
+	topPipeStain.yScale = 0.05
+	topPipeGroup:insert(topPipeStain)
+	
+	protector.to(topPipeStain,{time = 400, yScale = 1, transition = easing.outQuad, onComplete = function()
+		protector.to(topPipeStain,{time = 400, alpha = 0, transition = easing.outQuad, onComplete = function()
+			display.remove(topPipeStain)
+			topPipeStain = nil
+		end})
+	end})
+	
+	local bottomPipeStain = display.newImage("images/blood/pipestain"..math.random(1,3)..".png")
+	bottomPipeStain.anchorY = 0
+	bottomPipeStain.y = -topPipeGroup.height/2
+	bottomPipeStain.yScale = 0.05
+	bottomPipeGroup:insert(bottomPipeStain)
+	
+	protector.to(bottomPipeStain,{time = 400, yScale = 1, transition = easing.outQuad, onComplete = function()
+		protector.to(bottomPipeStain,{time = 400, alpha = 0, transition = easing.outQuad, onComplete = function()
+			display.remove(bottomPipeStain)
+			bottomPipeStain = nil
+		end})
+	end})
+	
 end
 
 ------------------------- class functions 
@@ -686,6 +717,7 @@ function scene:enterFrame(event)
 				local bird = birdArray[index]
 				if bird.crush then
 					destroyBird(bird)
+					stainPipes()
 					birdCrushed = true
 				end
 				if birdCrushed then sounds.birdCrush() end
