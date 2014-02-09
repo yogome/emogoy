@@ -90,6 +90,19 @@ local function pipeCrush()
 		sounds.pipeStart()
 		topPipeGroup.crushing = true
 		bottomPipeGroup.crushing = true
+		
+		local savedX = topPipeGroup.x
+		for index = 1, 10 do
+			protector.performWithDelay(21 * index, function()
+				local number = 2 + (index * 2)
+				topPipeGroup.x = savedX + math.random(-number,number)
+				bottomPipeGroup.x = savedX + math.random(-number,number)
+				if index == 10 then
+					topPipeGroup.x = savedX
+					bottomPipeGroup.x = savedX
+				end
+			end)
+		end
 
 		topPipeTransition = protector.to(topPipeGroup,{time = 210, y = display.contentCenterY, transition = easing.inExpo, onComplete = function()
 			sounds.pipeEnd()
