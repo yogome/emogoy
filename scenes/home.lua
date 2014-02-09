@@ -368,11 +368,13 @@ end
 local function shareGame()
 	local function listener( event )
 		if ( "session" == event.type ) then
+			print("Entered session")
 			if ( "login" == event.phase ) then
-				facebook.showDialog( "apprequests", { message="I just scored"..score.." on NsheBird! get revenge on those nasty birds!" } )
+				print("Atempt to show dialog")
+				facebook.showDialog( "apprequests", { message="I just scored "..score.." on NsheBird! get revenge on those nasty birds!" } )
 			end
 		elseif ( "dialog" == event.type ) then
-			print( event.response )
+			print("Something went wrong: "..event.response )
 		end
 	end
 
