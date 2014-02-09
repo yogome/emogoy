@@ -50,6 +50,13 @@ local colorData = {
 	{r = 128/255, g = 128/255, b = 128/255},
 }
 
+local medalColors = {
+	{r = 255/255, g = 128/255, b = 0/255},
+	{r = 192/255, g = 192/255, b = 192/255},
+	{r = 255/255, g = 255/255, b = 0/255},
+	{r = 255/255, g = 255/255, b = 255/255},
+}
+
 ------------------------- Functions
 local function angleOfPoint( pt )
 	local x, y = pt.x, pt.y
@@ -309,6 +316,16 @@ local function gameOver()
 	protector.from(gameOverImage, {time = 500, alpha = 0, transition = easing.outQuad, onStart = function()
 		gameOverImage.isVisible = true
 		
+		local medalIndex = math.floor(score / 10)
+		if medalIndex > 0 then
+			medal.isVisible = true
+			if medalIndex > #medalColors then
+				medalIndex = #medalColors
+			end
+			local medalColor = medalColors[medalIndex]
+			medal:setFillColor(medalColor.r,medalColor.g,medalColor.b)
+		end
+		
 		local updatedScore = false
 		for index = 1, score do
 			protector.performWithDelay(20 * index, function()
@@ -316,7 +333,10 @@ local function gameOver()
 				
 				if index > highScore then
 					if not updatedScore then
-						protector.performWithDelay(score*20, function()
+						newBestScore.isVisible = true
+						local delay = 500
+						if score * 20 > 500 then delay = score * 20 end
+						protector.performWithDelay(delay, function()
 							dbconfig("best", score)
 						end)
 					end
@@ -474,6 +494,8 @@ function scene:willEnterScene(event)
 	
 	highScore = tonumber(dbconfig("best")) or 0
 	
+	medal.isVisible = false
+	newBestScore.isVisible = false
 	scoreText.isVisible = false
 	endScreenGroup.isVisible = false
 	endBestScoreText.text = highScore
