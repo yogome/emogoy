@@ -566,7 +566,10 @@ function scene:willEnterScene(event)
 	tapHere2.alpha = 1
 	medal.isVisible = false
 	newBestScore.isVisible = false
+	scoreText.text = 0
 	scoreText.isVisible = false
+	scoreText.alpha = 1
+	scoreText.y = display.screenOriginY + 70
 	endScreenGroup.isVisible = false
 	endBestScoreText.text = highScore
 	endCurrentScore.text = 0
