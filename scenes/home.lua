@@ -304,10 +304,30 @@ end
 local function gameOver()
 	gameState = "transition"
 	physics.pause()
+	protector.to(scoreText, {time = 500, alpha = 0, transition = easing.outQuad})
 	protector.to(fadeRectangle, {time = 500, alpha = 0.6, transition = easing.outQuad})
 	protector.from(gameOverImage, {time = 500, alpha = 0, transition = easing.outQuad, onStart = function()
 		gameOverImage.isVisible = true
+		
+		local updatedScore = false
+		for index = 1, score do
+			protector.performWithDelay(20 * index, function()
+				endCurrentScore.text = index
+				
+				if index > highScore then
+					if not updatedScore then
+						protector.performWithDelay(score*20, function()
+							dbconfig("best", score)
+						end)
+					end
+					endBestScoreText.text = index
+				end
+			end)
+		end
 	end, onComplete = function()
+		transition.from(endScreenGroup, {time = 500, alpha = 0, transition = easing.outQuad, onStart = function()
+			endScreenGroup.isVisible = true
+		end})
 		transition.to(gameOverImage, {time = 500, y = display.contentCenterY - 200, transition = easing.outQuad, onComplete = function()
 			gameState = "end"
 		end})
@@ -399,6 +419,40 @@ function scene:createScene( event )
 	companyLogo.yScale = 0.2
 	hudGroup:insert(companyLogo)
 	
+	endScreenGroup = display.newGroup()
+	hudGroup:insert(endScreenGroup)
+	
+	endScreen = display.newImage("images/end/screen.png")
+	endScreen.x = display.contentCenterX
+	endScreen.y = display.contentCenterY
+	endScreenGroup:insert(endScreen)
+	
+	medal = display.newImage("images/end/medal.png")
+	medal.x = display.contentCenterX - 140
+	medal.y = display.contentCenterY + 20
+	medal.isVisible = false
+	endScreenGroup:insert(medal)
+	
+	endBestScoreText = display.newText("0",0,0,"pixel",60)
+	endBestScoreText:setFillColor(1)
+	endBestScoreText.anchorX = 1
+	endBestScoreText.x = display.contentCenterX + 210
+	endBestScoreText.y = display.contentCenterY + 60
+	endScreenGroup:insert(endBestScoreText)
+	
+	newBestScore = display.newImage("images/end/new.png")
+	newBestScore.x = display.contentCenterX + 60
+	newBestScore.y = display.contentCenterY + 15
+	newBestScore.isVisible = false
+	endScreenGroup:insert(newBestScore)
+	
+	endCurrentScore = display.newText("0",0,0,"pixel",60)
+	endCurrentScore:setFillColor(1)
+	endCurrentScore.anchorX = 1
+	endCurrentScore.x = display.contentCenterX + 210
+	endCurrentScore.y = display.contentCenterY - 35
+	endScreenGroup:insert(endCurrentScore)
+	
 	gameOverImage = display.newImage("images/gameover.png", true)
 	gameOverImage.x = display.contentCenterX
 	gameOverImage.y = display.contentCenterY
@@ -418,6 +472,14 @@ function scene:willEnterScene(event)
 	physics.setPositionIterations(4)
 	gameState = "loading"
 	
+	highScore = tonumber(dbconfig("best")) or 0
+	
+	scoreText.isVisible = false
+	endScreenGroup.isVisible = false
+	endBestScoreText.text = highScore
+	endCurrentScore.text = 0
+	medal.isVisible = false
+	newBestScore.isVisible = false
 	gameOverImage.y = display.contentCenterY
 	gameOverImage.isVisible = false
 	logo.alpha = 1

@@ -21,6 +21,10 @@ local soundEnabled = dbconfig("sound") or "1"
 dbconfig("sound", soundEnabled)
 ------------------------------- Other stuff
 sounds.initialize()
+
+if not dbconfig("best") then
+	dbconfig("best", 0)
+end
 ------------------------------- Notifications
 
 ------------------------------- Memory handler
