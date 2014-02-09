@@ -23,11 +23,10 @@ settings = {
 				"Icon-76.png",
 				"Icon-76@2x.png",
 			},
-			FacebookAppId = '251072025045181',
 			['URL types'] = {
 				item = {
 					['URL Schemes'] = {
-						['Item 0'] = 'FB205715149612858'
+						['Item 0'] = 'FB251337851713033'
 					}
 				}
 			}
