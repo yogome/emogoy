@@ -12,7 +12,7 @@ settings = {
 			UIStatusBarHidden = true,
 			UIPrerenderedIcon = true,
 			CFBundleDisplayName = 'NsheBird',
-			FacebookAppID = "251337851713033",
+			FacebookAppID = "221493164706214",
 			CFBundleIconFiles = {
 				"Icon.png",
 				"Icon@2x.png",
@@ -26,7 +26,7 @@ settings = {
 			['URL types'] = {
 				item = {
 					['URL Schemes'] = {
-						['Item 0'] = 'FB251337851713033'
+						['Item 0'] = 'FB221493164706214'
 					}
 				}
 			}

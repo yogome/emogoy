@@ -13,7 +13,7 @@ end
 
 
 local facebook = require("facebook")
-facebook.publishInstall("251337851713033")
+facebook.publishInstall("221493164706214")
 
 local launchArgs = ...
 ------------------------------- Initialize and Settings
