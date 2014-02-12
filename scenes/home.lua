@@ -385,7 +385,7 @@ local function shareGame()
 		log(event)
 		if ( "session" == event.type ) then
 			if ( "login" == event.phase ) then
-				facebook.showDialog( "feed", { caption = "I just scored "..score.." on NsheBird! get revenge on those nasty birds!", link = "www.emogoy.com" } )
+				facebook.showDialog( "feed", { caption = "I just scored "..score.." on NsheBird! get revenge on those nasty birds!", link = "http://goo.gl/5zqboJ" } )
 			end
 		elseif ( "dialog" == event.type ) then
 			print( event.response )
