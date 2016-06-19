@@ -1,7 +1,5 @@
 ------------------------- Test Menu
-local storyboard = require( "storyboard" )
-local sounds = require ( "sounds" )
-local dbconfig = require ( "vendor.dbconfig.dbconfig" )
+local storyboard = require( "composer" )
 local physics = require( "physics" )
 local protector = require( "helpers.protector" )
 local scene = storyboard.newScene()

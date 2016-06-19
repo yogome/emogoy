@@ -1,7 +1,5 @@
 ------------------------- ui (UI elements, transition doors, buttons)
 local sounds = require( "sounds" )
-local storyboard = require( "storyboard" )
-local widget = require( "widget" )
 
 local ui = {
 	buttonRetry = {normal = "images/buttons/play_1.png", pressed = "images/buttons/play_2.png", tapSound = sounds.pop, toggle = false,},

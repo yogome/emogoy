@@ -1,4 +1,3 @@
-local dbconfig = require ( "vendor.dbconfig.dbconfig" )
 
 local sounds = {}
 
@@ -8,7 +7,6 @@ local soundEnabled = "1"
 local pipeStart 
 local pipeEnd 
 local birdFlap
-local birdCrush 
 local bloodSplat
 local birdBump
 local pop
@@ -49,7 +47,7 @@ function sounds.initialize() -- Frequently used audio has to be loaded here.
 	pop = audio.loadSound("sounds/pop.mp3")
 	bounce = audio.loadSound("sounds/bounce.mp3")
 	
-	soundEnabled = dbconfig("sound") or "1"
+	soundEnabled = "1"
 end
 
 function sounds.pipeStart( )

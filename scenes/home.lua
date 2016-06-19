@@ -1,14 +1,10 @@
 ------------------------------- Home (Main screen)
-local storyboard = require( "storyboard" )
+local storyboard = require( "composer" )
 local sounds = require ( "sounds" )
-local dbconfig = require ( "vendor.dbconfig.dbconfig" )
 local music = require ( "music" )
 local protector = require( "helpers.protector" )
-local gyroBG = require( "helpers.gyroBackground" )
 local ui = require( "helpers.ui" )
 local physics = require( "physics" )
-local facebook = require( "facebook" )
-local log = require("vendor.log.log")
 local scene = storyboard.newScene()
 ------------------------- Variables
 local buttonsEnabled 
@@ -354,9 +350,6 @@ local function gameOver()
 						newBestScore.isVisible = true
 						local delay = 500
 						if score * 20 > 500 then delay = score * 20 end
-						protector.performWithDelay(delay, function()
-							dbconfig("best", score)
-						end)
 					end
 					endBestScoreText.text = index
 				end
@@ -378,21 +371,6 @@ local function retryGame()
 		sounds.pop()
 		storyboard.gotoScene("scenes.home")
 	end
-end
-
-local function shareGame()
-	local function listener( event )
-		log(event)
-		if ( "session" == event.type ) then
-			if ( "login" == event.phase ) then
-				facebook.showDialog( "feed", { caption = "I just scored "..score.." on NsheBird! get revenge on those nasty birds!", link = "http://goo.gl/5zqboJ" } )
-			end
-		elseif ( "dialog" == event.type ) then
-			print( event.response )
-		end
-	end
-
-	facebook.login( "221493164706214", listener )
 end
 
 local function stainPipes()
@@ -435,7 +413,7 @@ function scene:updateScore(newScore)
 	hudGroup:insert(scoreNumber)
 end
 
-function scene:createScene( event )
+function scene:create( event )
 	local group = self.view
 	
 	local testMenuButton = display.newRect(display.screenOriginX + 15,display.screenOriginY + 15,30,30)
@@ -581,7 +559,6 @@ function scene:createScene( event )
 	endShare.x = display.contentCenterX + 120
 	endShare.y = display.contentCenterY + 210
 	endScreenGroup:insert(endShare)
-	endShare:addEventListener("tap", shareGame)
 	
 	gameOverImage = display.newImage("images/gameover.png", true)
 	gameOverImage.x = display.contentCenterX
@@ -594,67 +571,6 @@ function scene:createScene( event )
 	
 	testMenuButton:toFront()
 	Runtime:addEventListener( "collision", self )
-end
-
-function scene:willEnterScene(event)
-	physics.start()
-	physics.setGravity( 0, 15 )
-	physics.setVelocityIterations( 2 )
-	physics.setPositionIterations(4)
-	gameState = "loading"
-	
-	highScore = tonumber(dbconfig("best")) or 0
-	
-	tapHere1.alpha = 1
-	tapHere2.alpha = 1
-	medal.isVisible = false
-	newBestScore.isVisible = false
-	scoreText.text = 0
-	scoreText.isVisible = false
-	scoreText.alpha = 1
-	scoreText.y = display.screenOriginY + 70
-	endScreenGroup.isVisible = false
-	endBestScoreText.text = highScore
-	endCurrentScore.text = 0
-	medal.isVisible = false
-	newBestScore.isVisible = false
-	gameOverImage.y = display.contentCenterY
-	gameOverImage.isVisible = false
-	logo.alpha = 1
-	logo.x = display.contentCenterX
-	companyLogo.alpha = 1
-	companyLogo.x = display.screenOriginX + 10
-	protector.to(fadeRectangle, {delay = 100, time = 400, alpha = 0.3, transition = easing.outQuad, onComplete = function()
-		gameState = "ready"
-	end})
-	
-	birdArray = {}
-	bloodParticleArray = {}
-	unlockTaps = 0
-	currentFrame = 0
-	score = 0
-	birdsSpawned = 0
-	birdsCrushed = 0
-	
-	display.remove(background)
-	background = nil
-	background = display.newImage("images/backgrounds/bg_"..math.random(1,2)..".png",true)
-	background.x = display.contentCenterX
-	background.y = display.contentCenterY
-	local backGroundScale = display.viewableContentHeight / 1024
-	background.xScale = backGroundScale
-	background.yScale = backGroundScale
-	backgroundGroup:insert(background)
-	
-	physics.addBody( topPipeGroup, "kinematic", 
-		{ bounce = 2, friction = 0, density = 1, filter = pipeFilter, shape = { -64,-512, 64,-512, 64,512, -64,512 }})
-	topPipeGroup.isBullet = true
-	
-	physics.addBody( bottomPipeGroup, "kinematic", 
-		{ bounce = 2, friction = 0, density = 1, filter = pipeFilter, shape = { -64,-512, 64,-512, 64,512, -64,512 }})
-	bottomPipeGroup.isBullet = true
-		
-	physics.addBody( gameFloor, "static", { filter = floorFilter, friction=0.5, bounce=0.3 } )
 end
 
 function scene:enterFrame(event)
@@ -734,46 +650,99 @@ function scene:collision(event)
 	end
 end
 
-function scene:enterScene( event )
-	local group = self.view
-	
-	music.playTrack(1)
-	
-	Runtime:addEventListener("enterFrame", self)
-	Runtime:addEventListener("touch", sceneTouch)
-	storyboard.printMemUsage()
-end
+function scene:show( event )
+	if event.phase == "will" then
+		physics.start()
+		physics.setGravity( 0, 15 )
+		physics.setVelocityIterations( 2 )
+		physics.setPositionIterations(4)
+		gameState = "loading"
 
-function scene:exitScene( event )
-	Runtime:removeEventListener ("enterFrame", self)
-	Runtime:removeEventListener("tap", sceneTouch)
-	
-	for index = #bloodParticleArray,1,-1 do
-		local bloodParticle = bloodParticleArray[index]
-		physics.removeBody(bloodParticle)
-		display.remove(bloodParticle)
-		table.remove(bloodParticleArray, index)
+		highScore = 1
+
+		tapHere1.alpha = 1
+		tapHere2.alpha = 1
+		medal.isVisible = false
+		newBestScore.isVisible = false
+		scoreText.text = 0
+		scoreText.isVisible = false
+		scoreText.alpha = 1
+		scoreText.y = display.screenOriginY + 70
+		endScreenGroup.isVisible = false
+		endBestScoreText.text = highScore
+		endCurrentScore.text = 0
+		medal.isVisible = false
+		newBestScore.isVisible = false
+		gameOverImage.y = display.contentCenterY
+		gameOverImage.isVisible = false
+		logo.alpha = 1
+		logo.x = display.contentCenterX
+		companyLogo.alpha = 1
+		companyLogo.x = display.screenOriginX + 10
+		protector.to(fadeRectangle, {delay = 100, time = 400, alpha = 0.3, transition = easing.outQuad, onComplete = function()
+			gameState = "ready"
+		end})
+
+		birdArray = {}
+		bloodParticleArray = {}
+		unlockTaps = 0
+		currentFrame = 0
+		score = 0
+		birdsSpawned = 0
+		birdsCrushed = 0
+
+		display.remove(background)
+		background = nil
+		background = display.newImage("images/backgrounds/bg_"..math.random(1,2)..".png",true)
+		background.x = display.contentCenterX
+		background.y = display.contentCenterY
+		local backGroundScale = display.viewableContentHeight / 1024
+		background.xScale = backGroundScale
+		background.yScale = backGroundScale
+		backgroundGroup:insert(background)
+
+		physics.addBody( topPipeGroup, "kinematic", 
+			{ bounce = 2, friction = 0, density = 1, filter = pipeFilter, shape = { -64,-512, 64,-512, 64,512, -64,512 }})
+		topPipeGroup.isBullet = true
+
+		physics.addBody( bottomPipeGroup, "kinematic", 
+			{ bounce = 2, friction = 0, density = 1, filter = pipeFilter, shape = { -64,-512, 64,-512, 64,512, -64,512 }})
+		bottomPipeGroup.isBullet = true
+
+		physics.addBody( gameFloor, "static", { filter = floorFilter, friction=0.5, bounce=0.3 } )
+	elseif event.phase == "did" then
+		music.playTrack(1)
+
+		Runtime:addEventListener("enterFrame", self)
+		Runtime:addEventListener("touch", sceneTouch)
 	end
-	
-	for index = #birdArray,1,-1 do
-		local bird = birdArray[index]
-		physics.removeBody(bird)
-		display.remove(bird)
-		table.remove(birdArray, index)
-	end
-	
-	physics.stop()
-	
 end
 
-function scene:destroyScene( event )
+function scene:hide( event )
+	if event.phase == "did" then
+		Runtime:removeEventListener ("enterFrame", self)
+		Runtime:removeEventListener("touch", sceneTouch)
 
+		for index = #bloodParticleArray,1,-1 do
+			local bloodParticle = bloodParticleArray[index]
+			physics.removeBody(bloodParticle)
+			display.remove(bloodParticle)
+			table.remove(bloodParticleArray, index)
+		end
+
+		for index = #birdArray,1,-1 do
+			local bird = birdArray[index]
+			physics.removeBody(bird)
+			display.remove(bird)
+			table.remove(birdArray, index)
+		end
+
+		physics.stop()
+	end	
 end
 
-scene:addEventListener( "createScene", scene )
-scene:addEventListener( "enterScene", scene )
-scene:addEventListener( "exitScene", scene )
-scene:addEventListener( "destroyScene", scene )
-scene:addEventListener( "willEnterScene", scene )
+scene:addEventListener( "create")
+scene:addEventListener( "show")
+scene:addEventListener( "hide")
 
 return scene

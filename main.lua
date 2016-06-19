@@ -1,36 +1,21 @@
 ------------------------------- Main entry point
-local cacharro = require("vendor.cacharro.cacharro")
 math.randomseed( os.time() ) -- Random seed every time, disable if you want to reproduce same conditions every time
 system.setIdleTimer( false ) -- disable device sleep mode
 display.setStatusBar( display.HiddenStatusBar ) -- Hide status bar
 
-local storyboard = require("storyboard")
+local storyboard = require("composer")
 local sounds = require("sounds")
-local dbconfig = require ( "vendor.dbconfig.dbconfig" )
-if not dbconfig.inited then
-	dbconfig.init{ name = "yogodb", debug = false }
-end
-
-
-local facebook = require("facebook")
-facebook.publishInstall("221493164706214")
 
 local launchArgs = ...
 ------------------------------- Initialize and Settings
-local soundEnabled = dbconfig("sound") or "1"
-dbconfig("sound", soundEnabled)
 ------------------------------- Other stuff
 sounds.initialize()
-
-if not dbconfig("best") then
-	dbconfig("best", 0)
-end
 ------------------------------- Notifications
 
 ------------------------------- Memory handler
 local function handleLowMemory( event )
 	print( "memory warning received! will atempt to purge inactive scenes." )
-	storyboard.purgeAll()
+	storyboard.removeHidden()
 end
 
 ------------------------------- Error listener
@@ -55,9 +40,5 @@ end
 Runtime:addEventListener( "key", onKeyEvent )
 Runtime:addEventListener( "memoryWarning", handleLowMemory )
 
-if cacharro.isSimulator then
-	storyboard.gotoScene("scenes.testMenu")
-else
-	storyboard.gotoScene("scenes.home")
-end
+storyboard.gotoScene("scenes.home")
 

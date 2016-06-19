@@ -1,6 +1,4 @@
 ------------------------------- Music
-local dbconfig = require ( "vendor.dbconfig.dbconfig" )
-
 local music = {}
 
 ------------------------------- Variables
@@ -16,9 +14,7 @@ local tracks = {"music/menu-map.mp3",	-- 1
 				"music/gameplay.mp3",}	-- 2
 ------------------------------- Functions
 local function initialize()
-	if dbconfig.isInit == false then dbconfig.init() end
-	musicEnabled = dbconfig("music") or "1"
-	dbconfig("music", musicEnabled)
+	musicEnabled = "1"
 	audio.setVolume(tonumber(musicEnabled), { channel = musicChannel } )
 end
 
